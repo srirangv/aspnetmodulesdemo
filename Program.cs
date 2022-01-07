@@ -4,15 +4,24 @@ global using Modules;
 using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 var dbName = builder.Configuration["DatabaseName"];
-builder.Services.AddSingleton(new DatabaseConfig { Name = dbName });
+services.AddSingleton(new DatabaseConfig { Name = dbName });
 builder.Services.AddSingleton<IDatabaseBootstrap, DatabaseBootstrap>();
-builder.Services.AddTransient(db => new SqliteConnection(dbName));
+services.AddTransient(db => new SqliteConnection(dbName));
+
+services
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen();
 
 var app = builder.Build(); 
 
 new Todos().AddRoutes(app);
+
+app
+    .UseSwagger()
+    .UseSwaggerUI();
 
 using (var scope = app.Services.CreateScope())
 {
