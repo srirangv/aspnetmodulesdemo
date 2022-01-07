@@ -5,21 +5,19 @@ using Microsoft.Data.Sqlite;
 
 public class DatabaseBootstrap : IDatabaseBootstrap
 {
-    private readonly DatabaseConfig databaseConfig;
-
-    public DatabaseBootstrap(DatabaseConfig databaseConfig)
+    private readonly SqliteConnection _connection;
+    
+    public DatabaseBootstrap(SqliteConnection connection)
     {
-        this.databaseConfig = databaseConfig;
+        this._connection = connection;
     }
 
     public void Setup()
     {
-        using var connection = new SqliteConnection(databaseConfig.Name);
-        
-        connection.Execute("Create Table If Not Exists Todos (" +
-                           "Id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                           "Title VARCHAR(100) NULL," +
-                           "IsComplete INTEGER NULL);");
+        _connection.Execute("Create Table If Not Exists Todos (" +
+                            "Id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "Title VARCHAR(100) NULL," +
+                            "IsComplete INTEGER NULL);");
     }
 }
 
@@ -35,14 +33,10 @@ public class DatabaseConfig
 
 public static class ServiceExtensions
 {
-    public static void AddSqliteDbConnection(this IServiceCollection services, string? dbName)
+    public static void BootstrapDb(this WebApplication app)
     {
-        services.AddScoped<Func<string, SqliteConnection>>(serviceProvider => tenant =>
-        {
-            if (null == dbName)
-                throw new KeyNotFoundException("No instance found for the given tenant.");
-
-            return new SqliteConnection(dbName);
-        });
+        using var scope = app.Services.CreateScope();
+        var bootstrap = scope.ServiceProvider.GetRequiredService<IDatabaseBootstrap>();
+        bootstrap.Setup();
     }
 }

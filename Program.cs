@@ -23,11 +23,7 @@ app
     .UseSwagger()
     .UseSwaggerUI();
 
-using (var scope = app.Services.CreateScope())
-{
-    var bootstrap = scope.ServiceProvider.GetRequiredService<IDatabaseBootstrap>();
-    bootstrap.Setup();
-}
+app.BootstrapDb();
 
 app.Run();
 
