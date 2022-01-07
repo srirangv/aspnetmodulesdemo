@@ -8,7 +8,7 @@ var services = builder.Services;
 
 var dbName = builder.Configuration["DatabaseName"];
 services.AddSingleton(new DatabaseConfig { Name = dbName });
-builder.Services.AddSingleton<IDatabaseBootstrap, DatabaseBootstrap>();
+services.AddSingleton<IDatabaseBootstrap, DatabaseBootstrap>();
 services.AddTransient(db => new SqliteConnection(dbName));
 
 services
